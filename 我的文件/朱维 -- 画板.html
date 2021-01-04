@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<style>
+			div.box{
+				width: 1200px;
+				height: 600px;
+				margin: 50px auto;
+			}
+			#Drawing-board{
+				display: block;
+				border: 1px solid black;
+			}
+			div.box>input{
+				width: 100px;
+				text-align: center;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="box">
+			<canvas id="Drawing-board" width="1200" height="600"></canvas>
+			<input type="number" placeholder="画笔大小" id="size">
+			<input type="color"id="color">
+			<input type="button" value="清除" id="Eliminate">
+			<input type="button" value="返回" id="Return">
+			<input type="button" value="下一幅" id="Next-piece">
+		</div>
+		<script>
+			// 获取标签
+				var can = document.getElementById('Drawing-board');
+				var size = document.getElementById('size');
+				var color = document.getElementById('color');
+				var Eliminate = document.getElementById('Eliminate');
+				var Return = document.getElementById('Return');
+				var NextPiece = document.getElementById('Next-piece');
+				
+				// 创建数组接收每个页面画出图案
+				var arr = []
+				// c创建数组接收每次画出的图案
+				var arr1 = []
+				// 创建数组接收清除前的数组
+				var arrs = []
+				// 创建上下文环境
+				var context = can.getContext('2d');
+				
+				// 限制画笔大小
+				size.onblur = function(){
+					if(this.value >= 20){
+						this.value = 20
+					}
+				}
+				
+				// 鼠标移入事件
+				can.onmouseover = function(){
+					// 鼠标按下事件
+					this.onmousedown = function(e){
+						//开始绘制路径
+						context.beginPath();
+						// 获取鼠标距离标签的距离
+							var x = e.offsetX;
+							var y = e.offsetY;
+							// 开始坐标
+							context.moveTo(x,y);
+						// 鼠标移动事件
+						this.onmousemove = function(e){
+						// 获取鼠标距离标签的距离
+						var x = e.offsetX;
+						var y = e.offsetY;
+						// 判断当前画笔粗细
+						if(size.value == ''){
+								size.value = 1;
+							}
+						// 创建临时对象存入当前坐标
+						var obj = {
+							x:x,
+							y:y,
+							color:color.value,
+							size:size.value
+						}
+						// 将坐标存入数组
+						arr1.push(obj)
+						//设置样式
+						context.strokeStyle = color.value;
+						// 设置粗细
+						context.lineWidth = size.value;
+						// 显示绘制的图形
+						context.stroke();
+						//结束坐标
+						context.lineTo(x,y);
+						}
+					}
+					// 鼠标弹起事件
+					can.onmouseup = function(){
+						// 将每个页面的所有图案的坐标存入数组
+						arr.push(arr1)
+						arr1 = []
+						// 显示绘制的图形
+						context.stroke();
+						// 结束绘路径
+						context.closePath();
+						// 清除鼠标移动事件
+						can.onmousemove = null;
+					}
+					
+				}
+				
+				// 设置变量接收总数组的长度
+				var length = 0;
+				// 给清除按钮设置点击事件
+				Eliminate.onclick = function(){
+					// 将每个页面的所有坐标数组存入总数组
+					if(arr.length != 0){
+						arrs.push(arr)
+					}
+					//存入一次清除一次数组，避免重复
+					arr = []
+					// 接收总数组的长度
+					length = arrs.length;
+					// 清除画布
+					context.clearRect(0,0,can.width,can.height); 
+				}
+				// 给返回按钮设置点击事件
+				Return.onclick = function(){
+					// 返回总数组中的上一个内容
+					length--;
+					
+					if(length <= 0){
+						length = 0;
+					}
+					huan()
+				}
+				
+				// 给下一幅按钮设置点击事件
+				NextPiece.onclick = function(){
+					// 进入总数组中的下一个内容
+					length++;
+					
+					if(length >= arrs.length){
+						length = arrs.length-1;
+					}
+					huan()
+				}
+				
+				// 换图封装代码
+				function huan(){
+					// 清除画布
+					context.clearRect(0,0,can.width,can.height); 
+					// 遍历总数组,获取上一个页面的坐标，并重新画入界面
+					for(var i = 0;i<arrs[length].length;i++){
+						// 遍历获取页面的每一个图案的坐标
+						for(var g = 0;g<arrs[length][i].length;g++){
+							if(g == 0){
+							//开始绘制路径
+							context.beginPath();
+							// 开始坐标
+							context.moveTo(arrs[length][i][g].x,arrs[length][i][g].y);
+						}else{
+							//设置样式
+							context.strokeStyle = arrs[length][i][g].color;
+						// 设置粗细
+							context.lineWidth = arrs[length][i][g].size;
+						//结束坐标
+							context.lineTo(arrs[length][i][g].x,arrs[length][i][g].y);
+						}
+						// 显示绘制的图形
+							context.stroke();
+						}
+						
+					}
+				}
+				
+		</script>
+	</body>
+</html>
